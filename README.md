@@ -85,6 +85,12 @@ stock-daily-report (上层应用)
 
 ## 🔄 版本历史
 
+### 2026-03-21 - v1.2.2
+
+- **cn-stock-volume**: 修复非交易日数据处理逻辑，自动使用最近交易日数据
+- **stock-top-gainers**: 新增完整脚本（browser_fetch.py, fetch_gainers.py, parse_snapshot.py）
+- **stock-theme-events**: 新增 run_full_analysis.py 完整分析脚本
+
 ### 2026-03-21 - Monorepo 合并
 
 - 合并原有多个重复的 Monorepo（cn-stock-volume、stock-theme-events）
@@ -93,7 +99,7 @@ stock-daily-report (上层应用)
 
 ### 各技能独立版本
 
-- **cn-stock-volume**: v1.2.0 (支持四市成交 + 涨跌家数)
+- **cn-stock-volume**: v1.2.2 (修复非交易日处理 + 四市成交 + 涨跌家数)
 - **stock-top-gainers**: v1.0.0 (近 10 日涨幅前 20)
 - **ths-stock-themes**: v1.0.0 (同花顺题材 + 人气排名)
 - **stock-theme-events**: v1.0.3 (题材 - 事件关联分析，已发布 ClawHub)
