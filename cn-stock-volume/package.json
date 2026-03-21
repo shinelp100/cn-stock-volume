@@ -1,6 +1,0 @@
-{
-  "name": "cn-stock-volume",
-  "version": "1.2.1",
-  "description": "获取中国 A 股四市（沪市/深市/创业板/北交所）成交金额、增缩量及比例报告",
-  "license": "MIT"
-}

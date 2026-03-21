@@ -32,6 +32,22 @@ SUMMARY_MARKETS = ["沪市", "深市", "北交所"]
 
 EMC_KLINE_URL = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
 
+# 新浪财经股票代码映射
+SINA_CODES = {
+    "沪市": "sh000001",
+    "深市": "sz399001",
+    "创业板": "sz399006",
+    "北交所": "sh899050",
+}
+
+# 腾讯财经股票代码映射
+TENCENT_CODES = {
+    "沪市": "sh000001",
+    "深市": "sz399001",
+    "创业板": "sz399006",
+    "北交所": "sh899050",
+}
+
 
 def fetch_kline(code, market, end_date, count=5):
     params = {
@@ -65,6 +81,130 @@ def fetch_kline(code, market, end_date, count=5):
             })
     result.sort(key=lambda x: x["date"])
     return result
+
+
+def fetch_sina_volume(market_name):
+    """
+    新浪财经 API 获取成交金额（备用方案 1）
+    返回：{ amount: float(元), volume: int(手), close: float, date: str }
+    
+    数据源：https://hq.sinajs.cn/list=[股票代码]
+    注意：返回 GBK 编码，需解码
+    """
+    if market_name not in SINA_CODES:
+        return None
+    
+    sina_code = SINA_CODES[market_name]
+    url = f"https://hq.sinajs.cn/list={sina_code}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Referer": "https://finance.sina.com.cn/",
+    }
+    
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = resp.read().decode("gbk")  # 新浪返回 GBK 编码
+        
+        # 解析：var hq_str_sh000001="上证指数，3041.23,3050.12,..."
+        match = re.search(r'="([^"]+)"', data)
+        if not match:
+            return None
+        
+        fields = match.group(1).split(",")
+        if len(fields) < 8:
+            return None
+        
+        # 字段 7 = 成交额（元），字段 6 = 成交量（手），字段 3 = 当前点位
+        amount = float(fields[7]) if fields[7] else 0
+        volume = float(fields[6]) if fields[6] else 0
+        close = float(fields[3]) if fields[3] else 0
+        
+        # 获取日期（从系统时间，新浪实时数据不提供日期）
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        return {
+            "amount": amount,
+            "volume": int(volume),
+            "close": close,
+            "date": today,
+            "source": "sina",
+        }
+    except Exception as e:
+        print(f"  ⚠️  新浪财经 API 失败：{e}")
+        return None
+
+
+def fetch_sina_with_retry(market_name, retries=2):
+    """新浪财经 API 带重试"""
+    for i in range(retries):
+        result = fetch_sina_volume(market_name)
+        if result and result['amount'] > 0:
+            return result
+        if i < retries - 1:
+            import time
+            time.sleep(1)
+    return None
+
+
+def fetch_tencent_volume(market_name):
+    """
+    腾讯财经 API 获取成交金额（备用方案 2）
+    返回：{ amount: float(元), close: float, date: str }
+    
+    数据源：https://web.ifzq.gtimg.cn/appstock/app/fqkline/get
+    """
+    if market_name not in TENCENT_CODES:
+        return None
+    
+    tencent_code = TENCENT_CODES[market_name]
+    # 转换代码格式：sh000001 → sh000001
+    url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={tencent_code},,,,60"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Referer": "https://stockapp.finance.qq.com/",
+    }
+    
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = resp.read().decode('utf-8')
+        
+        json_data = json.loads(data)
+        kline_data = json_data.get("data", {}).get(tencent_code, {})
+        data_list = kline_data.get("data", [])
+        
+        if not data_list:
+            return None
+        
+        # 最新数据（最后一条）
+        latest = data_list[-1]
+        if len(latest) >= 6:
+            # 字段：[日期，收盘，开盘，最高，最低，成交额，...]
+            return {
+                "date": latest[0],
+                "close": float(latest[1]) if latest[1] else 0,
+                "amount": float(latest[5]) if len(latest) > 5 and latest[5] else 0,
+                "source": "tencent",
+            }
+        return None
+    except Exception as e:
+        print(f"  ⚠️  腾讯财经 API 失败：{e}")
+        return None
+
+
+def fetch_tencent_with_retry(market_name, retries=2):
+    """腾讯财经 API 带重试"""
+    for i in range(retries):
+        result = fetch_tencent_volume(market_name)
+        if result and result.get('amount', 0) > 0:
+            return result
+        if i < retries - 1:
+            import time
+            time.sleep(1)
+    return None
 
 
 def fmt_amount(yuan):
@@ -194,86 +334,143 @@ def build_advance_decline_summary(advance_decline_results):
 
 def query_market_volume(target_date):
     """
-    查询四市指定日期的成交金额数据
+    查询四市指定日期的成交金额数据（支持多层降级）
     返回：{ market_name: { status, index_name, date, amount, change... } }
+    
+    降级策略：
+    1️⃣ 首选：东方财富网 K 线 API
+    2️⃣ 备用：新浪财经 API（实时数据）
     
     注意：如果目标日期是非交易日，自动使用最近交易日数据
     """
     end_date = target_date.replace("-", "")
     all_results = {}
     actual_date = None  # 记录实际使用的交易日
+    sina_fallback_used = False  # 标记是否使用了新浪财经备用方案
 
     for market_name, info in MARKETS.items():
+        result = None
+        
+        # 1️⃣ 首选：东方财富网 K 线 API
         try:
             klines = fetch_kline(info["code"], info["market"], end_date, count=5)
 
-            if not klines:
-                all_results[market_name] = {
-                    "status": "no_data",
-                    "index_name": info["name"],
-                    "message": "API 返回为空",
-                }
-                continue
+            if klines:
+                today_rec  = klines[-1]
+                prev_rec   = klines[-2] if len(klines) >= 2 else None
 
-            today_rec  = klines[-1]
-            prev_rec   = klines[-2] if len(klines) >= 2 else None
+                # 如果目标日期不是交易日，自动使用最近交易日数据
+                if today_rec["date"] != target_date:
+                    if actual_date is None:
+                        actual_date = today_rec["date"]
+                    
+                    result = {
+                        "status":       "ok",
+                        "index_name":   info["name"],
+                        "date":         today_rec["date"],
+                        "prev_date":    prev_rec["date"] if prev_rec else None,
+                        "note":         f"目标日期 {target_date} 为非交易日，使用最近交易日 {today_rec['date']} 数据",
+                        "amount":       today_rec["amount"],
+                        "amount_fmt":   fmt_amount(today_rec["amount"]),
+                        "amount_prev":  prev_rec["amount"]  if prev_rec else None,
+                        "prev_fmt":     fmt_amount(prev_rec["amount"]) if prev_rec and prev_rec["amount"] else "N/A",
+                        "change":       None,
+                        "change_fmt":   "N/A",
+                        "change_pct":   None,
+                        "close":        today_rec["close"],
+                        "close_prev":   prev_rec["close"] if prev_rec else None,
+                        "source":       "eastmoney",
+                    }
+                else:
+                    amt_today  = today_rec["amount"]
+                    amt_prev   = prev_rec["amount"]  if prev_rec else None
+                    amt_chg, amt_pct = calc_change(amt_today, amt_prev)
 
-            # 如果目标日期不是交易日，自动使用最近交易日数据
-            if today_rec["date"] != target_date:
-                # 记录实际交易日（用于后续市场的一致性）
-                if actual_date is None:
-                    actual_date = today_rec["date"]
-                
-                # 使用最近交易日数据，而不是返回错误
-                all_results[market_name] = {
-                    "status": "ok",
+                    result = {
+                        "status":       "ok",
+                        "index_name":   info["name"],
+                        "date":         target_date,
+                        "prev_date":    prev_rec["date"] if prev_rec else None,
+                        "amount":       amt_today,
+                        "amount_fmt":   fmt_amount(amt_today),
+                        "amount_prev":  amt_prev,
+                        "prev_fmt":     fmt_amount(amt_prev) if amt_prev else "N/A",
+                        "change":       amt_chg,
+                        "change_fmt":   (("+" if amt_chg >= 0 else "") + fmt_amount(abs(amt_chg))) if amt_chg is not None else "N/A",
+                        "change_pct":   amt_pct,
+                        "close":        today_rec["close"],
+                        "close_prev":   prev_rec["close"] if prev_rec else None,
+                        "source":       "eastmoney",
+                    }
+        except Exception as e:
+            print(f"  ⚠️  东方财富 API 失败（{market_name}）：{e}")
+        
+        # 2️⃣ 备用：新浪财经 API（如果东方财富失败）
+        if result is None or result.get("status") != "ok":
+            print(f"  🔄 尝试新浪财经 API（备用 1）：{market_name}...")
+            sina_result = fetch_sina_with_retry(market_name)
+            
+            if sina_result and sina_result['amount'] > 0:
+                sina_fallback_used = True
+                result = {
+                    "status":       "ok",
                     "index_name":   info["name"],
-                    "date":         today_rec["date"],
-                    "prev_date":    prev_rec["date"] if prev_rec else None,
-                    "note":         f"目标日期 {target_date} 为非交易日，使用最近交易日 {today_rec['date']} 数据",
-                    # 成交金额
-                    "amount":       today_rec["amount"],
-                    "amount_fmt":   fmt_amount(today_rec["amount"]),
-                    "amount_prev":  prev_rec["amount"]  if prev_rec else None,
-                    "prev_fmt":     fmt_amount(prev_rec["amount"]) if prev_rec and prev_rec["amount"] else "N/A",
-                    "change":       None,  # 无法计算环比（因为 prev_rec 可能不是前一交易日）
+                    "date":         sina_result["date"],
+                    "prev_date":    None,
+                    "note":         "使用新浪财经 API（备用 1）",
+                    "amount":       sina_result["amount"],
+                    "amount_fmt":   fmt_amount(sina_result["amount"]),
+                    "amount_prev":  None,
+                    "prev_fmt":     "N/A",
+                    "change":       None,
                     "change_fmt":   "N/A",
                     "change_pct":   None,
-                    # 指数收盘
-                    "close":        today_rec["close"],
-                    "close_prev":   prev_rec["close"] if prev_rec else None,
+                    "close":        sina_result["close"],
+                    "close_prev":   None,
+                    "source":       "sina",
                 }
-                continue
-
-            amt_today  = today_rec["amount"]
-            amt_prev   = prev_rec["amount"]  if prev_rec else None
-            amt_chg, amt_pct = calc_change(amt_today, amt_prev)
-
-            all_results[market_name] = {
-                "status":       "ok",
-                "index_name":   info["name"],
-                "date":         target_date,
-                "prev_date":    prev_rec["date"] if prev_rec else None,
-                # 成交金额
-                "amount":       amt_today,
-                "amount_fmt":   fmt_amount(amt_today),
-                "amount_prev":  amt_prev,
-                "prev_fmt":     fmt_amount(amt_prev) if amt_prev else "N/A",
-                "change":       amt_chg,
-                "change_fmt":   (("+" if amt_chg >= 0 else "") + fmt_amount(abs(amt_chg))) if amt_chg is not None else "N/A",
-                "change_pct":   amt_pct,
-                # 指数收盘
-                "close":        today_rec["close"],
-                "close_prev":   prev_rec["close"] if prev_rec else None,
-            }
-
-        except Exception as e:
-            all_results[market_name] = {
+                print(f"  ✅ 新浪财经 API 成功：{market_name} = {result['amount_fmt']}")
+        
+        # 3️⃣ 备用：腾讯财经 API（如果新浪财经也失败）
+        if result is None or result.get("status") != "ok":
+            print(f"  🔄 尝试腾讯财经 API（备用 2）：{market_name}...")
+            tencent_result = fetch_tencent_with_retry(market_name)
+            
+            if tencent_result and tencent_result.get('amount', 0) > 0:
+                sina_fallback_used = True
+                result = {
+                    "status":       "ok",
+                    "index_name":   info["name"],
+                    "date":         tencent_result["date"],
+                    "prev_date":    None,
+                    "note":         "使用腾讯财经 API（备用 2）",
+                    "amount":       tencent_result["amount"],
+                    "amount_fmt":   fmt_amount(tencent_result["amount"]),
+                    "amount_prev":  None,
+                    "prev_fmt":     "N/A",
+                    "change":       None,
+                    "change_fmt":   "N/A",
+                    "change_pct":   None,
+                    "close":        tencent_result["close"],
+                    "close_prev":   None,
+                    "source":       "tencent",
+                }
+                print(f"  ✅ 腾讯财经 API 成功：{market_name} = {result['amount_fmt']}")
+        
+        # 全部失败
+        if result is None or result.get("status") != "ok":
+            result = {
                 "status": "error",
                 "index_name": info["name"],
-                "message": str(e),
+                "message": "所有 API 均失败（东方财富、新浪、腾讯）",
+                "source": "none",
             }
+        
+        all_results[market_name] = result
 
+    if sina_fallback_used:
+        print(f"  📌 已启用新浪财经备用方案")
+    
     return all_results
 
 
@@ -385,9 +582,21 @@ def print_report(target_date, results, summary, advance_decline_summary=None):
         for market, pct in s["contributions"].items():
             contrib_lines += f"\n  ║    {market:<6}：{pct:>5.2f}%                               ║"
         print(f"  ║  各市场占比{contrib_lines}")
-        print(f"""  ╠══════════════════════════════════════════════════════════╣
-  ║  成交最大  ：{s['largest_market']:<6}（{s['contributions'][s['largest_market']]:.2f}%）                         ║
-  ║  成交最小  ：{s['smallest_market']:<6}（{s['contributions'][s['smallest_market']]:.2f}%）                         ║
+        
+        # 处理 N/A 情况（所有市场数据获取失败时）
+        if s['largest_market'] == "N/A" or not s['contributions']:
+            print(f"""  ╠══════════════════════════════════════════════════════════╣
+  ║  成交最大  ：数据不足                                              ║
+  ║  成交最小  ：数据不足                                              ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  注：创业板已包含在深市中，合计不重复计算                  ║
+  ╚══════════════════════════════════════════════════════════╝""")
+        else:
+            largest_pct = s['contributions'].get(s['largest_market'], 0)
+            smallest_pct = s['contributions'].get(s['smallest_market'], 0)
+            print(f"""  ╠══════════════════════════════════════════════════════════╣
+  ║  成交最大  ：{s['largest_market']:<6}（{largest_pct:.2f}%）                         ║
+  ║  成交最小  ：{s['smallest_market']:<6}（{smallest_pct:.2f}%）                         ║
   ╠══════════════════════════════════════════════════════════╣
   ║  注：创业板已包含在深市中，合计不重复计算                  ║
   ╚══════════════════════════════════════════════════════════╝""")
