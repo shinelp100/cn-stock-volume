@@ -153,3 +153,8 @@ python3 ~/.jvs/.openclaw/workspace/skills/stock-data-monorepo/stock-theme-events
 ---
 
 **最后更新**：2026-03-21
+
+## 更新日志
+
+### v0.1.0 (2026-03-21)
+- v1.2.2: 修复非交易日数据处理，新增 stock-top-gainers 完整脚本，完善 stock-theme-events 分析功能
