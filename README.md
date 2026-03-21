@@ -1,102 +1,110 @@
-# cn-stock-volume
+# A 股股票分析 Skill 集合
 
-获取中国 A 股四市（沪市/深市/创业板/北交所）指定日期的**成交金额**、增缩量及比例，并输出三市合计总结。
+这是一个 OpenClaw Skill 集合仓库（Monorepo），包含多个 A 股股票分析相关的技能。
 
-## 功能特性
+## 📦 包含的 Skills
 
-- 📊 **四市数据覆盖**：上证指数（沪市）、深证成指（深市）、创业板指（创业板）、北证 50（北交所）
-- 💰 **成交金额为主指标**：成交额（亿元），自动剔除重复计算（创业板已包含在深市中）
-- 📋 **自动总结**：三市合计（沪市 + 深市 + 北交所）、环比变化、各市场占比、最大/最小市场标注
-- 📅 **支持任意历史交易日**：周末/节假日自动识别并提示最近交易日
-- 🆓 **完全免费**：东方财富网数据源，无需 API Key
+| Skill 目录 | 描述 | ClawHub Slug | 状态 |
+|-----------|------|-------------|------|
+| **[cn-stock-volume](cn-stock-volume/)** | 获取 A 股四市（沪市/深市/创业板/北交所）成交金额、增缩量及比例 | `cn-stock-volume` | ✅ 已发布 |
+| **[stock-theme-events](stock-theme-events/)** | 股票题材事件分析，自动聚合同花顺/东方财富题材 | `stock-theme-events` | 📝 待发布 |
+| **[stock-top-gainers](stock-top-gainers/)** | 获取 A 股近 10 日涨幅排名前 20 股票 | `stock-top-gainers` | 📝 待发布 |
+| **[ths-stock-themes](ths-stock-themes/)** | 获取同花顺个股题材/概念板块和人气排名 | `ths-stock-themes` | 📝 待发布 |
 
-## 使用方式
+## 🚀 快速安装
 
 ```bash
-# 查询今日
-python3 scripts/fetch_volume.py
+# 安装单个 skill
+npx clawhub@latest install cn-stock-volume
+npx clawhub@latest install stock-theme-events
+npx clawhub@latest install stock-top-gainers
+npx clawhub@latest install ths-stock-themes
+```
 
-# 查询指定日期
+## 📁 目录结构
+
+```
+cn-stock-volume/              # 仓库根目录
+├── README.md                 # 本文件（集合说明）
+├── cn-stock-volume/          # 成交金额分析 skill
+│   ├── SKILL.md
+│   ├── package.json
+│   ├── _meta.json
+│   └── scripts/
+│       └── fetch_volume.py
+├── stock-theme-events/       # 题材事件分析 skill
+│   ├── SKILL.md
+│   ├── scripts/
+│   └── config/
+├── stock-top-gainers/        # 涨幅排名 skill
+│   ├── SKILL.md
+│   └── scripts/
+└── ths-stock-themes/         # 同花顺题材 skill
+    ├── SKILL.md
+    ├── scripts/
+    └── references/
+```
+
+## 🛠️ 发布更新
+
+使用 `skill-publish-tool` 发布单个 skill 的更新：
+
+```bash
+# 安装发布工具
+npx clawhub@latest install skill-publish-tool
+
+# 发布 skill 更新（monorepo 模式）
+python3 ~/.jvs/.openclaw/workspace/skills/skill-publish-tool/scripts/publish_skill.py \
+  ~/.jvs/.openclaw/workspace/skills/cn-stock-volume/cn-stock-volume \
+  --slug cn-stock-volume \
+  --changelog "修复 XX 问题" \
+  --bump patch \
+  --collection-root ~/.jvs/.openclaw/workspace/skills/cn-stock-volume
+```
+
+## 📊 使用示例
+
+### 1. 查询昨日成交数据
+
+```bash
+cd cn-stock-volume
 python3 scripts/fetch_volume.py 2026-03-20
-
-# JSON 输出
-python3 scripts/fetch_volume.py 2026-03-20 --json
 ```
 
-## 报告示例
+### 2. 获取近 10 日涨幅排名
 
-```
-======================================================================
-  📊 中国股市成交报告  |  日期：2026-03-20
-======================================================================
-
-  ╔══════════════════════════════════════════════════════════╗
-  ║  📋 三市合计总结（不含重复计算）                           ║
-  ╠══════════════════════════════════════════════════════════╣
-  ║  合计成交金额：    23030.9亿                            ║
-  ║  前一交易日  ：    21274.7亿                            ║
-  ║  增缩额      ：    +1756.2亿                            ║
-  ║  增缩比例    ：📈   +8.25%                              ║
-  ╠══════════════════════════════════════════════════════════╣
-  ║  各市场占比                                            ║
-  ║    沪市    ：41.89%                                     ║
-  ║    深市    ：57.40%                                     ║
-  ║    北交所   ： 0.70%                                    ║
-  ╠══════════════════════════════════════════════════════════╣
-  ║  注：创业板已包含在深市中，合计不重复计算                  ║
-  ╚══════════════════════════════════════════════════════════╝
-
-  市场      指数收盘     前一收盘     成交金额 (亿)   前日金额 (亿)   增缩额 (亿)   比例
-  ──────────────────────────────────────────────────────────────────
-  沪市      3957.05    4006.55       9648.6 亿       9352.6 亿      +296.0 亿   📈 +3.16%
-  深市     13866.20   13901.57      13220.0 亿      11757.0 亿     +1462.9 亿   📈+12.44%
-  创业板     3352.10    3309.10       6633.0 亿       5452.1 亿     +1181.0 亿   📈+21.66%
-  北交所     1316.14    1329.56        162.3 亿        165.0 亿       -2.73 亿   📉 -1.65%
+```bash
+cd stock-top-gainers
+python3 scripts/fetch_gainers.py
 ```
 
-## 数据来源
+### 3. 查询个股题材
 
-- [东方财富网](https://www.eastmoney.com/) K 线历史数据 API
-- 指数代码：沪市 `000001`、深市 `399001`、创业板 `399006`、北交所 `899050`
-
-## 重要说明
-
-**创业板与深市的关系**：
-- 创业板是深圳证券交易所的子板块
-- 深市成交金额（399001）已包含创业板（399006）的成交数据
-- 本脚本在**分市场详情**中展示创业板数据供参考
-- 本脚本在**合计总结**中只计算沪市 + 深市 + 北交所，避免重复计算
-
-## 在 OpenClaw 中使用
-
-将此 Skill 目录复制到 OpenClaw 的 Skills 配置目录即可：
-
-```
-config/skills/cn-stock-volume/
-├── SKILL.md
-├── package.json
-├── _meta.json
-└── scripts/
-    └── fetch_volume.py
+```bash
+cd ths-stock-themes
+python3 scripts/fetch_themes.py --stock 000001
 ```
 
-## 更新日志
-### v1.2.1 (2026-03-21)
-- 优化数据获取稳定性，改进错误提示
+### 4. 分析题材事件
 
-### v1.2.0 (2026-03-21)
-- 新增创业板数据，修复合计计算逻辑（创业板已包含在深市中，合计不重复计算）
+```bash
+cd stock-theme-events
+python3 scripts/cluster_themes.py
+```
 
+## 📝 更新日志
 
-### v1.1.0 (2026-03-21)
-- ✨ 新增创业板（399006）数据查询
-- 🐛 修复合计计算逻辑，剔除创业板重复计算
-- 📝 更新文档说明创业板与深市的关系
+### v1.0.0 (2026-03-21)
+- 创建 skill 集合仓库（Monorepo 结构）
+- 整合 4 个股票分析 skill
+- 统一目录结构，便于管理和发布
 
-### v1.0.0 (2026-01-01)
-- 🎉 初始版本发布
-- 支持沪市、深市、北交所三市成交数据查询
+## 🔗 相关链接
 
-## 发布许可
+- **GitHub**: https://github.com/shinelp100/cn-stock-volume
+- **ClawHub**: https://clawhub.ai
+- **skill-publish-tool**: https://clawhub.ai/k976nx1d2sxx6a13t1ncfatc1s83bbdr/skill-publish-tool
+
+## 📄 许可证
 
 MIT License
