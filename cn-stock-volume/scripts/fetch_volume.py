@@ -196,9 +196,12 @@ def query_market_volume(target_date):
     """
     查询四市指定日期的成交金额数据
     返回：{ market_name: { status, index_name, date, amount, change... } }
+    
+    注意：如果目标日期是非交易日，自动使用最近交易日数据
     """
     end_date = target_date.replace("-", "")
     all_results = {}
+    actual_date = None  # 记录实际使用的交易日
 
     for market_name, info in MARKETS.items():
         try:
@@ -215,12 +218,30 @@ def query_market_volume(target_date):
             today_rec  = klines[-1]
             prev_rec   = klines[-2] if len(klines) >= 2 else None
 
+            # 如果目标日期不是交易日，自动使用最近交易日数据
             if today_rec["date"] != target_date:
+                # 记录实际交易日（用于后续市场的一致性）
+                if actual_date is None:
+                    actual_date = today_rec["date"]
+                
+                # 使用最近交易日数据，而不是返回错误
                 all_results[market_name] = {
-                    "status": "no_data",
-                    "index_name": info["name"],
-                    "message": f"未找到 {target_date} 的交易数据（可能为非交易日）。最近交易日为 {today_rec['date']}",
-                    "nearest_date": today_rec["date"],
+                    "status": "ok",
+                    "index_name":   info["name"],
+                    "date":         today_rec["date"],
+                    "prev_date":    prev_rec["date"] if prev_rec else None,
+                    "note":         f"目标日期 {target_date} 为非交易日，使用最近交易日 {today_rec['date']} 数据",
+                    # 成交金额
+                    "amount":       today_rec["amount"],
+                    "amount_fmt":   fmt_amount(today_rec["amount"]),
+                    "amount_prev":  prev_rec["amount"]  if prev_rec else None,
+                    "prev_fmt":     fmt_amount(prev_rec["amount"]) if prev_rec and prev_rec["amount"] else "N/A",
+                    "change":       None,  # 无法计算环比（因为 prev_rec 可能不是前一交易日）
+                    "change_fmt":   "N/A",
+                    "change_pct":   None,
+                    # 指数收盘
+                    "close":        today_rec["close"],
+                    "close_prev":   prev_rec["close"] if prev_rec else None,
                 }
                 continue
 
@@ -262,21 +283,56 @@ def build_summary(results):
     
     注意：创业板是深交所的子板块，深市成交金额已包含创业板数据。
          合计计算时只统计：沪市 + 深市 + 北交所，避免重复计算。
+    
+    如果所有市场都失败，返回一个包含错误信息的 summary（而不是 None）
     """
     ok_markets = {k: v for k, v in results.items() if v["status"] == "ok"}
 
+    # 如果没有成功获取的市场，返回一个空的 summary（而不是 None）
     if not ok_markets:
-        return None
+        return {
+            "total_amount": 0,
+            "total_fmt": "0 亿",
+            "total_prev": 0,
+            "total_prev_fmt": "0 亿",
+            "change": 0,
+            "change_fmt": "0 亿",
+            "change_pct": 0,
+            "contributions": {},
+            "largest_market": "N/A",
+            "smallest_market": "N/A",
+            "market_count": 0,
+            "error": "所有市场数据获取失败",
+        }
 
     # 用于合计的市场（排除创业板，避免重复计算）
     summary_markets = {k: v for k, v in ok_markets.items() if k in SUMMARY_MARKETS}
 
     if not summary_markets:
-        return None
+        return {
+            "total_amount": 0,
+            "total_fmt": "0 亿",
+            "total_prev": 0,
+            "total_prev_fmt": "0 亿",
+            "change": 0,
+            "change_fmt": "0 亿",
+            "change_pct": 0,
+            "contributions": {},
+            "largest_market": "N/A",
+            "smallest_market": "N/A",
+            "market_count": 0,
+            "error": "可用于合计的市场数据为空",
+        }
 
     total_amount     = sum(v["amount"]      for v in summary_markets.values())
     total_prev      = sum(v["amount_prev"] for v in summary_markets.values() if v["amount_prev"])
-    total_chg, total_pct = calc_change(total_amount, total_prev)
+    
+    # 只有在所有市场都有 prev 数据时才计算环比
+    has_all_prev = all(v.get("amount_prev") is not None for v in summary_markets.values())
+    if has_all_prev:
+        total_chg, total_pct = calc_change(total_amount, total_prev)
+    else:
+        total_chg, total_pct = None, None
 
     # 各市场占总额比例（基于用于合计的市场）
     contributions = {}
@@ -413,17 +469,23 @@ def main():
     if len(sys.argv) >= 2 and not sys.argv[1].startswith("--"):
         raw_date = parse_date(sys.argv[1])
         if not raw_date:
-            print(f"❌ 日期格式错误：{sys.argv[1]}，支持 YYYY-MM-DD 或 YYYYMMDD")
+            if "--json" not in sys.argv:
+                print(f"❌ 日期格式错误：{sys.argv[1]}，支持 YYYY-MM-DD 或 YYYYMMDD")
             sys.exit(1)
     else:
         raw_date = datetime.now().strftime("%Y-%m-%d")
 
-    print(f"正在查询 {raw_date} 的成交数据...")
+    # --json 模式下不打印日志，避免污染 JSON 输出
+    quiet_mode = "--json" in sys.argv
+    
+    if not quiet_mode:
+        print(f"正在查询 {raw_date} 的成交数据...")
     results = query_market_volume(raw_date)
     summary = build_summary(results)
     
     # 查询涨跌家数（v1.2.0+）
-    print(f"正在查询 {raw_date} 的涨跌家数...")
+    if not quiet_mode:
+        print(f"正在查询 {raw_date} 的涨跌家数...")
     advance_decline_results = query_market_advance_decline(raw_date)
     advance_decline_summary = build_advance_decline_summary(advance_decline_results)
 
