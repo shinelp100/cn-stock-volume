@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# 缓存文件
+cache/
+*.cache
+
+# 测试数据
+test_*.json
+*_test.json
+
+# 临时文件
+*.tmp
+*.log
+.DS_Store
