@@ -1,14 +1,52 @@
 ---
 name: cn-stock-volume
-version: 1.4.0
-description: 获取中国股市四市（沪市、深市、创业板、北交所）指定日期的成交金额、增缩量及比例，并输出四市合计总结。支持查询三市（沪市/深市/北交所）上涨/下跌家数。**首选 Browser 方案**（东方财富网网页版），备用 API 方案（东方财富/新浪/腾讯）。
+version: 2.0.0
+description: 获取中国股市四市（沪市、深市、创业板、北交所）成交金额、增缩量及比例。**自动化 v2.0**：自动调用 Browser 工具、智能缓存、鲁棒性解析。支持涨跌家数查询。
 ---
 
-# cn-stock-volume
+# cn-stock-volume v2.0（自动化优化版）
 
 获取中国 A 股四市（沪市 / 深市 / 创业板 / 北交所）指定日期的**成交金额**、增缩额、增缩比例，以及四市合计总结报告。
 
+## 🚀 v2.0 新特性
+
+- **🤖 自动化集成**：`generate_report.py` 自动调用 Browser 工具获取东方财富网数据
+- **💾 智能缓存**：避免重复调用 Browser（TTL=24 小时）
+- **🔧 鲁棒性解析**：4 层解析策略（标准→宽松→表格→OCR），支持页面结构变化
+- **📊 多级降级**：Browser → 东方财富 API → 新浪/腾讯 API
+
 ## 核心脚本
+
+### 自动化报告（推荐，v2.0+）
+
+```bash
+python3 scripts/generate_report.py [日期] [选项]
+```
+
+**选项：**
+- `--force-browser` - 强制使用 Browser 方案（忽略缓存）
+- `--no-cache` - 不使用缓存，重新获取
+- `--json` - 输出 JSON 格式
+
+**示例：**
+```bash
+# 查询今日（自动选择最优方案）
+python3 scripts/generate_report.py
+
+# 查询指定日期
+python3 scripts/generate_report.py 2026-03-21
+
+# 强制使用 Browser
+python3 scripts/generate_report.py --force-browser
+
+# 忽略缓存，重新获取
+python3 scripts/generate_report.py --no-cache
+
+# JSON 输出
+python3 scripts/generate_report.py --json
+```
+
+### 传统 API 查询（兼容模式）
 
 ```bash
 python3 scripts/fetch_volume.py <YYYY-MM-DD | YYYYMMDD>
@@ -98,20 +136,34 @@ python3 scripts/fetch_volume.py 2026-03-20 --json
 
 ## 数据来源与降级策略
 
-### 📊 数据源优先级（v1.3.0+）
+### 📊 数据源优先级（v2.0+）
 
 | 优先级 | 数据源 | 类型 | 状态 |
 |--------|--------|------|------|
-| **1️⃣ 首选** | 东方财富网 K 线 API | API | ✅ 正常 |
-| **2️⃣ 备用 1** | 新浪财经 API | API | ⚠️ 需优化 headers |
-| **3️⃣ 备用 2** | 腾讯财经 API | API | ⚠️ 需调试 URL |
-| **4️⃣ 备用 3** | Browser 工具 | 浏览器自动化 | 📝 脚本已创建 |
+| **1️⃣ 首选** | Browser 工具（东方财富网网页版） | 浏览器自动化 | ✅ 正常 |
+| **2️⃣ 备用 1** | 东方财富网 K 线 API | API | ✅ 正常 |
+| **3️⃣ 备用 2** | 新浪财经 API | API | ✅ 正常 |
+| **4️⃣ 备用 3** | 腾讯财经 API | API | ✅ 正常 |
 
 ### 降级逻辑
 
 ```
-东方财富 API → 失败 → 新浪财经 → 失败 → 腾讯财经 → 失败 → Browser 工具
+Browser 工具 → 失败 → 东方财富 API → 失败 → 新浪财经 → 失败 → 腾讯财经
 ```
+
+### Browser 解析策略（4 层鲁棒性）
+
+1. **标准解析** - 正则表达式匹配标准格式
+2. **宽松解析** - 关键词 + 数字提取
+3. **表格解析** - 表格行解析（支持 | 和制表符分隔）
+4. **OCR 解析** - OCR 文本解析（如果包含 OCR 结果）
+
+### 缓存机制
+
+- **缓存位置**：`~/.jvs/.openclaw/workspace/.cache/`
+- **TTL**：24 小时
+- **缓存键**：`browser:YYYY-MM-DD`
+- **清理**：自动清理过期缓存
 
 - 自动重试：每个数据源重试 2 次
 - 优雅降级：所有数据源失败时，输出"数据不足"而不是崩溃

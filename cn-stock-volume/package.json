@@ -1,7 +1,7 @@
 {
   "name": "cn-stock-volume",
   "version": "2.0.0",
-  "description": "获取 A 股四市（沪市/深市/创业板/北交所）成交金额、增缩量及比例",
+  "description": "获取 A 股四市成交金额（自动化 v2.0：Browser 首选 + 智能缓存 + 鲁棒性解析）",
   "license": "MIT",
   "keywords": [
     "stock",
