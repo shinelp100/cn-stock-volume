@@ -108,3 +108,8 @@ python3 scripts/cluster_themes.py
 ## 📄 许可证
 
 MIT License
+
+## 更新日志
+
+### v1.0.4 (2026-03-22)
+- Monorepo 结构重构，独立发布版本
