@@ -1,6 +1,6 @@
 {
   "name": "cn-stock-volume",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "displayName": "A 股市场日报",
   "description": "获取 A 股市场核心数据：三大指数点位及涨跌幅、涨跌家数比。成交量数据支持手动补充。",
   "author": "shinelp100",
