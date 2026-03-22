@@ -1,6 +1,0 @@
-{
-  "name": "cn-stock-volume",
-  "version": "2.0.0",
-  "description": "获取 A 股四市成交金额（自动化 v2.0：Browser 首选 + 智能缓存 + 鲁棒性解析）",
-  "slug": "cn-stock-volume"
-}
