@@ -1,4 +1,4 @@
-# cn-stock-volume v1.0 - 设计文档
+# cn-stock-volume v3.0 - 设计文档
 
 ## 📊 数据需求
 
