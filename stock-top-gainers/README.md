@@ -54,6 +54,9 @@ python3 ~/.jvs/.openclaw/workspace/skills/stock-data-monorepo/stock-top-gainers/
 
 ## 更新日志
 
+### v1.0.1 (2026-03-22)
+- Monorepo 结构重构，独立发布版本
+
 ### v1.0.0 (2026-03-21)
 - 初始版本发布
 - 新增近 10 日涨幅排名功能
