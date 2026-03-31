@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph 传统AI["传统AI对话"]
+        A1["用户输入: 50 Token"]
+        A2["AI输出: 100 Token"]
+        A3["单次消耗: 150 Token"]
+    end
+
+    subgraph Agent["AI Agent任务"]
+        B1["System Prompt: 500 Token"]
+        B2["历史对话: 2000 Token"]
+        B3["工具描述: 1500 Token"]
+        B4["用户输入: 200 Token"]
+        B5["模型输出: 500 Token"]
+        B6["单次消耗: 4700 Token"]
+    end
+
+    传统AI -->|"消耗比 1:31"| Agent

@@ -1,0 +1,22 @@
+[
+  {"rank": 1, "code": "920069", "name": "普昂医疗", "price": 43.48, "today_chg": 136.56, "period_rank": "1/795", "period_chg": 136.56},
+  {"rank": 2, "code": "600396", "name": "华电辽能", "price": 8.99, "today_chg": 1.24, "period_rank": "2/795", "period_chg": 131.70},
+  {"rank": 3, "code": "603687", "name": "大胜达", "price": 15.63, "today_chg": -5.27, "period_rank": "3/795", "period_chg": 57.72},
+  {"rank": 4, "code": "600726", "name": "华电能源", "price": 6.68, "today_chg": -1.33, "period_rank": "4/795", "period_chg": 56.44},
+  {"rank": 5, "code": "603538", "name": "美诺华", "price": 39.18, "today_chg": 9.99, "period_rank": "5/795", "period_chg": 54.43},
+  {"rank": 6, "code": "000908", "name": "ST景峰", "price": 7.77, "today_chg": 5.00, "period_rank": "6/795", "period_chg": 53.86},
+  {"rank": 7, "code": "605299", "name": "舒华体育", "price": 19.25, "today_chg": 10.00, "period_rank": "7/795", "period_chg": 52.29},
+  {"rank": 8, "code": "600310", "name": "广西能源", "price": 6.60, "today_chg": 10.00, "period_rank": "8/795", "period_chg": 51.72},
+  {"rank": 9, "code": "301292", "name": "海科新源", "price": 96.29, "today_chg": 20.00, "period_rank": "9/795", "period_chg": 49.33},
+  {"rank": 10, "code": "600666", "name": "奥瑞德", "price": 6.08, "today_chg": 9.95, "period_rank": "10/795", "period_chg": 46.15},
+  {"rank": 11, "code": "300868", "name": "杰美特", "price": 54.88, "today_chg": 11.77, "period_rank": "11/795", "period_chg": 43.07},
+  {"rank": 12, "code": "300668", "name": "杰恩设计", "price": 39.29, "today_chg": -7.88, "period_rank": "12/795", "period_chg": 42.67},
+  {"rank": 13, "code": "600982", "name": "宁波能源", "price": 7.35, "today_chg": 10.03, "period_rank": "13/795", "period_chg": 42.17},
+  {"rank": 14, "code": "300432", "name": "富临精工", "price": 25.06, "today_chg": 1.54, "period_rank": "14/795", "period_chg": 41.98},
+  {"rank": 15, "code": "002310", "name": "东方新能", "price": 3.84, "today_chg": 10.03, "period_rank": "15/795", "period_chg": 41.18},
+  {"rank": 16, "code": "002082", "name": "万邦德", "price": 26.04, "today_chg": 10.01, "period_rank": "16/795", "period_chg": 40.68},
+  {"rank": 17, "code": "603843", "name": "*ST正平", "price": 9.28, "today_chg": 0.00, "period_rank": "17/795", "period_chg": 38.51},
+  {"rank": 18, "code": "301306", "name": "西测测试", "price": 150.71, "today_chg": -2.34, "period_rank": "18/795", "period_chg": 38.48},
+  {"rank": 19, "code": "300720", "name": "海川智能", "price": 67.22, "today_chg": -2.86, "period_rank": "19/795", "period_chg": 36.68},
+  {"rank": 20, "code": "002192", "name": "融捷股份", "price": 78.00, "today_chg": 10.00, "period_rank": "20/795", "period_chg": 36.60}
+]

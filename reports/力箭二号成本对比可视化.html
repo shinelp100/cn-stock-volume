@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力箭二号成本优势对比</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: slideDown 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #fb923c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+            animation: slideUp 0.8s ease-out 0.4s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .stage-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .bar-wrapper {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .bar {
+            width: 70px;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+            pointer-events: none;
+        }
+
+        .stage:nth-child(1) .bar {
+            height: 200px;
+            background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+            animation: growBar 1s ease-out 0.6s both;
+        }
+
+        .stage:nth-child(2) .bar {
+            height: 280px;
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+            animation: growBar 1s ease-out 0.8s both;
+        }
+
+        .stage:nth-child(3) .bar {
+            height: 140px;
+            background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+            animation: growBar 1s ease-out 1s both;
+        }
+
+        @keyframes growBar {
+            from {
+                height: 0;
+                opacity: 0;
+            }
+            to {
+                height: var(--height);
+                opacity: 1;
+            }
+        }
+
+        .value {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            animation: fadeIn 0.8s ease-out 1.2s both;
+        }
+
+        .label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            font-weight: 500;
+            line-height: 1.4;
+            animation: fadeIn 0.8s ease-out 1.4s both;
+        }
+
+        .stage-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeIn 0.8s ease-out 1.2s both;
+        }
+
+        .connector {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+            animation: drawLine 0.6s ease-out 1.4s both;
+        }
+
+        @keyframes drawLine {
+            from {
+                height: 0;
+                opacity: 0;
+            }
+            to {
+                height: 30px;
+                opacity: 1;
+            }
+        }
+
+        .stage:first-child .connector {
+            display: none;
+        }
+
+        .insights {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+            animation: slideUp 0.8s ease-out 1.6s both;
+        }
+
+        .insights-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-dot {
+            width: 8px;
+            height: 8px;
+            background: #06b6d4;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .insight-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            animation: fadeIn 0.8s ease-out 1.8s both;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .title {
+                font-size: 32px;
+            }
+
+            .chart-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .bar-wrapper {
+                height: 250px;
+            }
+
+            .value {
+                font-size: 24px;
+            }
+        }
+
+        /* Hover effects */
+        .stage:hover .bar {
+            filter: brightness(1.1);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stage:hover .value {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">力箭二号成本优势</h1>
+            <p class="subtitle">从持平到领先的技术突破</p>
+        </div>
+
+        <div class="chart-container">
+            <!-- Stage 1: Current State -->
+            <div class="stage">
+                <div class="stage-number">阶段 01</div>
+                <div class="bar-wrapper">
+                    <div class="bar"></div>
+                </div>
+                <div class="stage-title">不回收状态</div>
+                <div class="value">30,000</div>
+                <div class="label">元/公斤<br>与猎鹰九号持平</div>
+            </div>
+
+            <!-- Stage 2: Transition -->
+            <div class="stage">
+                <div class="stage-number">阶段 02</div>
+                <div class="connector"></div>
+                <div class="bar-wrapper">
+                    <div class="bar"></div>
+                </div>
+                <div class="stage-title">实现回收</div>
+                <div class="value">17,500</div>
+                <div class="label">元/公斤<br>2500美元/公斤</div>
+            </div>
+
+            <!-- Stage 3: Future Advantage -->
+            <div class="stage">
+                <div class="stage-number">阶段 03</div>
+                <div class="connector"></div>
+                <div class="bar-wrapper">
+                    <div class="bar"></div>
+                </div>
+                <div class="stage-title">成本优势</div>
+                <div class="value">50%</div>
+                <div class="label">相对于<br>猎鹰九号</div>
+            </div>
+        </div>
+
+        <div class="insights">
+            <div class="insights-title">💡 核心洞察</div>
+            <div class="insight-item">
+                <div class="insight-dot"></div>
+                <div class="insight-text"><span class="highlight">成本持平</span>：力箭二号不回收状态已与SpaceX猎鹰九号回收状态基本相当，打破美国垄断</div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-dot"></div>
+                <div class="insight-text"><span class="highlight">技术突破</span>：CBC构型、集束式回收、模块化设计实现了成本与性能的完美平衡</div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-dot"></div>
+                <div class="insight-text"><span class="highlight">未来领先</span>：回收后成本有望降至SpaceX水平的一半，建立显著竞争优势</div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-dot"></div>
+                <div class="insight-text"><span class="highlight">产业拐点</span>：2026年前后，中国商业航天进入规模化产业化关键阶段</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>数据来源：中科宇航官方声明 | 2026年3月31日</p>
+        </div>
+    </div>
+</body>
+</html>

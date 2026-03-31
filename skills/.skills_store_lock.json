@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "deepresearchwork": {
+      "name": "Deep Research Work From Xian.LaoJ",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=deepresearchwork",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "markdown-formatter": {
+      "name": "Markdown Formatter",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=markdown-formatter",
+      "source": "skillhub",
+      "version": "1.0.0"
+    }
+  }
+}

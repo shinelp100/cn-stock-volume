@@ -1,0 +1,17 @@
+{
+  "name": "stock-browser-fetcher",
+  "version": "1.0.0",
+  "description": "浏览器自动化获取同花顺问财数据",
+  "main": "fetch_data.js",
+  "scripts": {
+    "fetch": "node fetch_data.js",
+    "fetch:sentiment": "node fetch_data.js --sentiment",
+    "fetch:gainers": "node fetch_data.js --gainers"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

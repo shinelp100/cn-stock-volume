@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>力箭二号成本下降路径</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 60px 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 40px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #fb923c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* SVG Container */
+        .chart-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
+        }
+
+        /* Details Section */
+        .details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .detail-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .detail-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .detail-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+            font-weight: 300;
+        }
+
+        /* Key Insights */
+        .insights {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .insights-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .insight-item {
+            display: flex;
+            gap: 12px;
+        }
+
+        .insight-icon {
+            width: 6px;
+            height: 6px;
+            background: #06b6d4;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .title {
+                font-size: 32px;
+            }
+
+            .details {
+                grid-template-columns: 1fr;
+            }
+
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-wrapper {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">成本下降路径</h1>
+            <p class="subtitle">从持平到领先的三阶段演进</p>
+        </div>
+
+        <div class="chart-wrapper">
+            <svg viewBox="0 0 1000 500" width="1000" height="500" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Grid -->
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#f97316;stop-opacity:0.1" />
+                        <stop offset="100%" style="stop-color:#f97316;stop-opacity:0" />
+                    </linearGradient>
+                    <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:0.1" />
+                        <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:0" />
+                    </linearGradient>
+                    <linearGradient id="grad3" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:0.1" />
+                        <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Grid Lines -->
+                <line x1="50" y1="50" x2="50" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <line x1="50" y1="400" x2="950" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+                <line x1="950" y1="50" x2="950" y2="400" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+                <!-- Y-axis labels -->
+                <text x="30" y="410" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="end">0</text>
+                <text x="30" y="310" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="end">10k</text>
+                <text x="30" y="210" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="end">20k</text>
+                <text x="30" y="110" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="end">30k</text>
+
+                <!-- Stage 1: 不回收状态 -->
+                <rect x="100" y="100" width="200" height="300" fill="url(#grad1)" rx="8"/>
+                <rect x="110" y="110" width="180" height="280" fill="none" stroke="#f97316" stroke-width="3" rx="6"/>
+                
+                <text x="200" y="430" font-size="14" font-weight="600" fill="#f97316" text-anchor="middle">不回收状态</text>
+                <text x="200" y="455" font-size="18" font-weight="800" fill="white" text-anchor="middle">30,000</text>
+                <text x="200" y="475" font-size="12" fill="rgba(255,255,255,0.7)" text-anchor="middle">元/公斤</text>
+
+                <!-- Arrow 1 -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#fbbf24" />
+                    </marker>
+                </defs>
+                <path d="M 320 250 L 380 250" stroke="#fbbf24" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="350" y="235" font-size="12" fill="#fbbf24" font-weight="600" text-anchor="middle">实现回收</text>
+
+                <!-- Stage 2: 回收状态 -->
+                <rect x="400" y="180" width="200" height="220" fill="url(#grad2)" rx="8"/>
+                <rect x="410" y="190" width="180" height="200" fill="none" stroke="#fbbf24" stroke-width="3" rx="6"/>
+                
+                <text x="500" y="430" font-size="14" font-weight="600" fill="#fbbf24" text-anchor="middle">回收状态</text>
+                <text x="500" y="455" font-size="18" font-weight="800" fill="white" text-anchor="middle">17,500</text>
+                <text x="500" y="475" font-size="12" fill="rgba(255,255,255,0.7)" text-anchor="middle">元/公斤</text>
+
+                <!-- Arrow 2 -->
+                <path d="M 620 290 L 680 290" stroke="#06b6d4" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+                <text x="650" y="275" font-size="12" fill="#06b6d4" font-weight="600" text-anchor="middle">成本优势</text>
+
+                <!-- Stage 3: 成本优势 -->
+                <rect x="700" y="280" width="200" height="120" fill="url(#grad3)" rx="8"/>
+                <rect x="710" y="290" width="180" height="100" fill="none" stroke="#06b6d4" stroke-width="3" rx="6"/>
+                
+                <text x="800" y="430" font-size="14" font-weight="600" fill="#06b6d4" text-anchor="middle">成本优势</text>
+                <text x="800" y="455" font-size="18" font-weight="800" fill="white" text-anchor="middle">50%</text>
+                <text x="800" y="475" font-size="12" fill="rgba(255,255,255,0.7)" text-anchor="middle">相对于猎鹰九号</text>
+
+                <!-- Percentage labels inside bars -->
+                <text x="200" y="260" font-size="24" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">100%</text>
+                <text x="500" y="300" font-size="24" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">58%</text>
+                <text x="800" y="350" font-size="24" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">50%</text>
+
+                <!-- Decorative elements -->
+                <circle cx="200" cy="80" r="4" fill="#f97316" opacity="0.5"/>
+                <circle cx="500" cy="160" r="4" fill="#fbbf24" opacity="0.5"/>
+                <circle cx="800" cy="260" r="4" fill="#06b6d4" opacity="0.5"/>
+            </svg>
+        </div>
+
+        <div class="details">
+            <div class="detail-card">
+                <div class="detail-number">30,000</div>
+                <div class="detail-label">不回收状态<br>元/公斤</div>
+                <div class="detail-desc">与猎鹰九号持平</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-number">17,500</div>
+                <div class="detail-label">回收状态<br>元/公斤</div>
+                <div class="detail-desc">2500美元/公斤</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-number">50%</div>
+                <div class="detail-label">成本优势<br>相对优势</div>
+                <div class="detail-desc">相对于SpaceX</div>
+            </div>
+        </div>
+
+        <div class="insights">
+            <div class="insights-title">🔑 关键驱动因素</div>
+            <div class="insight-grid">
+                <div class="insight-item">
+                    <div class="insight-icon"></div>
+                    <div class="insight-text"><span class="highlight">模块化生产</span>：年产20发能力，规模化摊薄研发成本</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon"></div>
+                    <div class="insight-text"><span class="highlight">可重复使用</span>：一级火箭回收利用，摊薄单次成本</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon"></div>
+                    <div class="insight-text"><span class="highlight">供应链优势</span>：3.35米标准化，国内配套完善</div>
+                </div>
+                <div class="insight-item">
+                    <div class="insight-icon"></div>
+                    <div class="insight-text"><span class="highlight">集束式回收</span>：降低结构复杂度，减少成本</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
