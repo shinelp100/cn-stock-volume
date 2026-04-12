@@ -85,53 +85,50 @@ The Deep Research skill provides a systematic approach to conducting thorough in
    - Identify potential conflicts of interest
    - Consider temporal context of information
 
-### Phase 4: Report Generation — ⚠️ MANDATORY HUMANIZER + VISUALIZATION STEP
+### Phase 4: Report Generation — ⚠️ MANDATORY POLISHER + VISUALIZATION STEP
 > **⚠️ CRITICAL — Two mandatory steps before final output:**
-> 1. **Humanizer-zh 去AI化** — MUST run before Mermaid conversion
+> 1. **report-polisher-zh 研报润色** — MUST run before Mermaid conversion
 > 2. **Mermaid 可视化** — ASCII diagrams MUST be converted to Mermaid
 > Both steps are mandatory. Do not skip.
 
 ---
 
-#### Step 1: Humanizer-zh 去AI化（必须在 Mermaid 之前执行）
+#### Step 1: report-polisher-zh 研报润色（必须在 Mermaid 之前执行）
 
-在生成 Mermaid 图表之前，先对报告全文进行"去AI味"处理。具体流程：
+在生成 Mermaid 图表之前，先对报告全文进行专业研报润色与 AI 痕迹清除。具体流程：
 
-1. **加载 humanizer-zh skill**：读取 `~/.qclaw/workspace/skills/humanizer-zh/SKILL.md`
-2. **扫描 AI 写作模式**：重点检测以下模式并修复：
-   - 夸大的象征意义（"标志着...关键时刻"、"体现了...核心作用"）
-   - 宣传性语言（"令人叹为观止"、"充满活力"、"至关重要"）
-   - -ing 结尾的肤浅分析（"反映了...深厚联系"）
-   - 模糊归因（"专家认为"、"行业报告显示"）
-   - 否定式排比（"不仅...而且..."、"这不仅仅是...而是..."）
-   - 三段式法则过度使用
-   - "此外"、"与此同时"、"值得注意的是"等 AI 连接词
-   - 破折号过度使用
-   - 协作交流痕迹（"希望这对您有帮助"、"如果您想..."）
-   - 过度限定的软化表达（"可以说"、"在一定程度上"）
-3. **重写核心章节**：对报告的以下部分重点去AI化：
-   - 📌 Executive Summary（执行摘要）
-   - 📌 Key Findings（核心发现）
-   - 📌 风险提示 / 局限性
-4. **保留 Mermaid 代码块**：在去AI化过程中，**不要修改** Mermaid 图表代码块内容，只对文字描述部分进行处理
-5. **口语化表达**：让文字读起来像真人说话，有观点、有态度、不绕弯
+1. **加载 report-polisher-zh skill**：读取 `~/.qclaw/workspace/skills/report-polisher-zh/SKILL.md`
+2. **研报结构检查**（按清单逐项核查）：
+   - 标题规范性（含公司/行业名称、核心观点或投资评级）
+   - 摘要完整性（核心逻辑、关键数据、投资建议）
+   - 章节结构（行业概况、公司分析、财务分析、风险提示等）
+   - 数据引用规范（来源标注、时间节点、数值单位统一）
+   - 图表标注规范（编号连续、标题清晰、来源标注）
+   - 风险提示完整性（主要风险、具体描述、风险等级）
+3. **朱雀检测对抗三步法**（针对统计概率分布，非口语化）：
+   - **术语注入**：用低频专业术语替代高频通俗词（"很多"→"众多"、"但是"→"然而"），使用行业特有表达（"赛道"、"估值锚"、"业绩兑现"）
+   - **信息压缩**：提高信息密度，删除冗余修饰词，合并同类信息，每句话必须承载有效信息
+   - **句式打散**：长短句极端混合，打破节奏规律性，避免"首先...其次...最后..."套路结构
+4. **改写强度选择**（根据 AI 痕迹程度）：
+   - 轻度（10-20%）：术语替换 + 句式微调
+   - 中度（30-50%）：段落重组 + 信息压缩
+   - 深度（60-80%）：结构重构 + 逻辑重排
+5. **保留 Mermaid 代码块**：润色过程中**不修改** Mermaid 图表代码块，只处理文字描述部分
 
-**Humanizer-zh 核心原则**：
-- ✅ 删除填充短语，直接陈述事实
-- ✅ 打破公式结构，避免三段式列举
-- ✅ 变化句子长度，长短交错
-- ✅ 信任读者，不过度解释
-- ✅ 删除听起来像"金句"的可引用语句
-- ✅ 允许一些混乱，跑题和半成型的想法是人性化的体现
+**⚠️ 无效方法（已验证失败，禁止使用）**：
+- ❌ 口语化改写
+- ❌ 情感注入
+- ❌ 简单同义词替换
+- ❌ 增加"我认为"等主观表达
 
-**示例对比**：
+**有效策略**：
+- ✅ 术语注入
+- ✅ 信息压缩
+- ✅ 句式打散
+- ✅ 适度瑕疵注入
+- ✅ 个人表达习惯注入
 
-| 去AI前（AI味） | 去AI后（人性化） |
-|---------------|----------------|
-| 存储芯片行业正迎来"三十年一遇"的超级周期，由AI算力需求爆发、产能结构性紧缺、国产替代加速三重驱动。 | 存储芯片这波行情来得猛。三星Q1利润暴增755%，相当于单季赚了过去一年的钱。需求侧是AI服务器在抢货，供给侧是三星、海力士、美光三家联手控货，国产替代又在加速——三重因素叠在一起，把行情推向高潮。 |
-| 希望这对您有帮助！如果您想让我扩展任何部分，请告诉我。 | （删除协作交流痕迹，不留"希望有帮助"类结尾） |
-
-> **⚠️ 注意**：去AI化和 Mermaid 优化是两个独立步骤。去AI化处理文字内容；Mermaid 优化处理图表。二者顺序不能颠倒。
+> **⚠️ 注意**：研报润色和 Mermaid 优化是两个独立步骤。润色处理文字内容；Mermaid 优化处理图表。二者顺序不能颠倒。
 
 ---
 
