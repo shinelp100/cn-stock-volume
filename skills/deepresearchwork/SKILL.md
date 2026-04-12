@@ -412,8 +412,8 @@ flowchart TD
 ```
 # [Research Topic] - Deep Research Report
 
-> **去AI化说明**：本报告已通过 humanizer-zh 处理，文字表达已去除 AI 痕迹，
-> Mermaid 图表代码块在去AI化过程中已保留原样。
+> **研报润色说明**：本报告已通过 report-polisher-zh 润色，文字表达符合专业研报规范，
+> Mermaid 图表代码块在润色过程中已保留原样。
 
 ## Executive Summary
 [2-3 sentence summary of key findings — humanized, natural tone]
@@ -449,9 +449,9 @@ flowchart TD
 ```
 
 > **⚠️ REMINDER: Before finalizing the report:**
-> 1. **ALWAYS invoke `humanizer-zh` skill** and humanize text content first (preserve Mermaid code blocks)
+> 1. **ALWAYS invoke `report-polisher-zh` skill** and polish text content first (preserve Mermaid code blocks)
 > 2. **THEN invoke `mermaid-diagrams` skill** and convert any ASCII/text architecture diagrams to proper Mermaid syntax.
-> See Phase 4 → Humanizer-zh + Mermaid Visualization sections for full rules.
+> See Phase 4 → report-polisher-zh + Mermaid Visualization sections for full rules.
 
 ## Use Cases
 
