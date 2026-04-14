@@ -37,4 +37,16 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
+## 报告输出目录
+
+使用 deep-research 技能生成深度产研报告时，默认输出目录：
+
+```
+/Users/shinelp100/Desktop/A股深度产研报告
+```
+
+文件命名规范：`{报告主题}-深度产研报告-{YYYYMMDD}.md`
+
+---
+
 Add whatever helps you do your job. This is your cheat sheet.

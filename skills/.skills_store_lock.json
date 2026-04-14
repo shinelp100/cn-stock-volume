@@ -12,6 +12,42 @@
       "zip_url": "https://lightmake.site/api/v1/download?slug=markdown-formatter",
       "source": "skillhub",
       "version": "1.0.0"
+    },
+    "mermaid-diagrams": {
+      "name": "Mermaid Diagrams",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=mermaid-diagrams",
+      "source": "skillhub",
+      "version": "0.1.0"
+    },
+    "mermaid-architect": {
+      "name": "Mermaid Architect",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=mermaid-architect",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "wechat-publisher-pro": {
+      "name": "微信公众号自动发布增强版",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=wechat-publisher-pro",
+      "source": "skillhub",
+      "version": "3.1.3"
+    },
+    "self-improving-agent": {
+      "name": "self-improving-agent",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=self-improving-agent",
+      "source": "skillhub",
+      "version": "1.0.11"
+    },
+    "humanizer-zh": {
+      "name": "humanizer-zh",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=humanizer-zh",
+      "source": "skillhub",
+      "version": "1.0.0"
+    },
+    "multi-search-engine": {
+      "name": "Multi Search Engine",
+      "zip_url": "https://lightmake.site/api/v1/download?slug=multi-search-engine",
+      "source": "skillhub",
+      "version": "2.0.1"
     }
   }
 }
