@@ -328,6 +328,63 @@ flowchart TD
    - Conflicting information needing resolution
    - Gaps in current knowledge
 
+---
+
+### Phase 5: Mermaid → Instagram 信息图导出（报告完成后执行）
+
+> **触发条件**：报告已通过 Phase 4 完成润色 + Mermaid 嵌入，Markdown 文件已保存到磁盘后执行。
+> **核心原则**：只生成图片，**严禁修改报告 Markdown 原文**（不使用 `--update` 参数）。
+
+#### Step 1: 定位报告文件与输出目录
+
+1. 确认最终报告的 `.md` 文件路径（Phase 4 保存位置）
+2. 图片输出目录 = 报告文件**所在目录**（同级目录，不另建子文件夹）
+   - 例如：报告路径为 `~/Desktop/A股深度产研报告/XX报告-20260412.md`
+   - 则图片输出到 `~/Desktop/A股深度产研报告/`
+   - 通过 `-o <报告所在目录>` 参数指定
+
+#### Step 2: 执行 Mermaid 批量转图
+
+```bash
+cd ~/projects/flowchart-to-instagram
+
+# 从 Markdown 中提取所有 Mermaid 代码块，批量生成 PNG
+# ⚠️ 不使用 --update，保证报告 Markdown 原文不被改动
+python scripts/md2images.py "<报告.md完整路径>" -o "<报告所在目录>" --prefix fig_
+```
+
+**参数说明：**
+
+| 参数 | 作用 | 注意 |
+|------|------|------|
+| `<报告.md完整路径>` | 指定要处理的 Markdown 文件 | 绝对路径或相对路径均可 |
+| `-o "<报告所在目录>"` | 图片输出到报告同级目录 | 与报告同目录，方便查找 |
+| `--prefix fig_` | 图片文件名前缀（如 `fig_1.png`、`fig_2.png`） | 可自定义，默认为 `chart_` |
+
+**⚠️ 禁止事项：**
+- ❌ **禁止使用 `--update` 参数**（会将 Mermaid 代码块替换为图片链接，破坏报告原文）
+- ❌ **禁止修改报告 Markdown 文件**（图片是报告的附属产物，报告原文保持不变）
+
+**预期输出：**
+- 报告同级目录下生成 `fig_1.png`、`fig_2.png`、... 等图片文件
+- 图片数量 = 报告中 Mermaid 代码块的数量
+- 图片内容为 Instagram 风格信息图，适合公众号投放
+
+#### Step 3: 验证输出
+
+1. 检查输出目录下是否生成了预期数量的 PNG 文件
+2. 确认报告 Markdown 原文未被修改（Mermaid 代码块完整保留）
+3. 向用户报告：图片数量、文件名、存放路径
+
+#### 报告最终交付物清单（Phase 4 + Phase 5）
+
+| # | 交付物 | 格式 | 路径 |
+|---|--------|------|------|
+| 1 | 完整研究报告（含 Mermaid 代码块） | `.md` | 报告所在目录 |
+| 2 | Mermaid 信息图（Instagram 风格） | `.png` | 与报告同目录（`fig_N.png`） |
+
+---
+
 ## Tools Integration
 
 ### Web Research
@@ -406,6 +463,11 @@ flowchart TD
 - Prepare final research report
 - **Quality gate: (1) Has text been humanized? (2) Does the report contain any ASCII art/box diagrams that should be Mermaid?**
 
+### Cycle 5: Mermaid 信息图导出
+- 报告保存到磁盘后，使用 `flowchart-to-instagram` skill 将 Mermaid 代码块转为 PNG
+- **图片输出到报告同目录，不修改报告原文**（见 Phase 5 规范）
+- 验证 PNG 生成数量与 Mermaid 代码块数量一致
+
 ## Output Structure
 
 ### Research Report Template
@@ -448,10 +510,18 @@ flowchart TD
 [Questions requiring additional investigation]
 ```
 
+**📦 最终交付物（Phase 5 补充）：**
+报告 Markdown 保存到磁盘后，自动执行 Phase 5，将报告中的所有 Mermaid 代码块导出为 PNG 图片：
+- 图片格式：`fig_1.png`、`fig_2.png`、...
+- 图片路径：与报告 `.md` 文件**同目录**
+- **报告 Markdown 原文不被修改**（Mermaid 代码块保留在报告中）
+
 > **⚠️ REMINDER: Before finalizing the report:**
 > 1. **ALWAYS invoke `report-polisher-zh` skill** and polish text content first (preserve Mermaid code blocks)
 > 2. **THEN invoke `mermaid-diagrams` skill** and convert any ASCII/text architecture diagrams to proper Mermaid syntax.
+> 3. **FINALLY invoke Phase 5** — use `flowchart-to-instagram` skill to export Mermaid diagrams as PNG images to the **same directory as the report**, **without modifying the report markdown**.
 > See Phase 4 → report-polisher-zh + Mermaid Visualization sections for full rules.
+> See Phase 5 → Mermaid → Instagram 信息图导出 for image generation rules.
 
 ## Use Cases
 
