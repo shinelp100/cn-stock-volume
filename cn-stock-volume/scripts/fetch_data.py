@@ -8,19 +8,20 @@ fetch_data.py - 从同花顺问财获取 A 股市场数据
 
 手动补充：
 - 成交量数据（今日量能、昨日量能）
+
+⚠️ 注意：本脚本已移除缓存逻辑，每次运行都会获取最新数据
 """
 
 import json
 import re
 import sys
+import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
 
-# 缓存配置
-CACHE_DIR = Path(__file__).parent.parent / "cache"
+# 手动数据目录
 MANUAL_DIR = Path(__file__).parent.parent / "manual"
-CACHE_TTL_HOURS = 24
 
 # 占位符
 PLACEHOLDER = None
@@ -41,53 +42,10 @@ SENTIMENT_QUERIES = {
 }
 
 
-def get_cache_path(date: str) -> Path:
-    """获取缓存文件路径"""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR / f"{date}.json"
-
-
 def get_manual_path(date: str) -> Path:
     """获取手动补充数据文件路径"""
     MANUAL_DIR.mkdir(parents=True, exist_ok=True)
     return MANUAL_DIR / f"{date}.json"
-
-
-def load_cache(date: str) -> Optional[Dict[str, Any]]:
-    """加载缓存数据"""
-    cache_path = get_cache_path(date)
-    if not cache_path.exists():
-        return None
-    
-    try:
-        with open(cache_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        
-        # 检查缓存是否过期（24 小时）
-        cached_at = datetime.fromisoformat(data.get('_cached_at', ''))
-        if datetime.now() - cached_at > timedelta(hours=CACHE_TTL_HOURS):
-            print(f"[INFO] 缓存已过期：{cache_path}")
-            return None
-        
-        print(f"[INFO] 加载缓存：{cache_path}")
-        return data
-    except Exception as e:
-        print(f"[WARN] 缓存读取失败：{e}", file=sys.stderr)
-        return None
-
-
-def save_cache(date: str, data: Dict[str, Any]) -> None:
-    """保存缓存数据"""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    cache_path = get_cache_path(date)
-    
-    data['_cached_at'] = datetime.now().isoformat()
-    data['_date'] = date
-    
-    with open(cache_path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    
-    print(f"[INFO] 缓存已保存：{cache_path}")
 
 
 def load_manual_data(date: str) -> Dict[str, Any]:
@@ -239,45 +197,95 @@ def parse_sentiment_snapshot(snapshot_text: str, data_type: str) -> Dict[str, An
     return {'count': PLACEHOLDER, 'error': '解析失败'}
 
 
-def fetch_with_browser(url: str, timeout_ms: int = 30000) -> str:
-    """
-    使用 OpenClaw browser 工具获取数据
-    
-    这是伪代码框架，实际由外部调用
-    """
-    print(f"[INFO] 访问：{url}")
-    # 实际调用：
-    # browser.navigate(url)
-    # snapshot = browser.snapshot(refs="aria")
-    # return snapshot
-    return ""
-
-
 def fetch_index_data(index_key: str, index_name: str) -> Dict[str, Any]:
-    """获取指数数据"""
-    query = INDEX_QUERIES.get(index_key, index_name)
-    url = build_iwencai_url(query)
-    print(f"[INFO] 获取 {index_name} 数据...")
-    
-    # TODO: 实际调用 browser 工具
-    # snapshot = fetch_with_browser(url)
-    # result = parse_index_snapshot(snapshot, index_name)
-    
-    # 临时返回占位符
-    return {'point': PLACEHOLDER, 'change': PLACEHOLDER, 'error': '待实现浏览器调用'}
+    """获取指数数据（优先使用 fetch-index-data 缓存）"""
+    try:
+        # 首先尝试从 fetch-index-data 缓存加载
+        from pathlib import Path
+        cache_path = Path.home() / ".jvs/.openclaw/workspace/skills/fetch-index-data/cache/2026-03-20.json"
+        
+        if cache_path.exists():
+            import json
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                cached_data = json.load(f)
+            
+            indices = cached_data.get('indices', {})
+            if index_key in indices:
+                data = indices[index_key]
+                if data.get('point') is not None:
+                    print(f"[INFO] ✅ {index_name}: {data['point']} ({data['change']}%) [来自缓存]")
+                    return data
+        
+        # 缓存未命中，尝试 browser 工具
+        from browser_fetch import fetch_index_data as browser_fetch_index
+        
+        query = INDEX_QUERIES.get(index_key, index_name)
+        result = browser_fetch_index(index_key, index_name)
+        
+        if result.get('point') is not None:
+            print(f"[INFO] ✅ {index_name}: {result['point']} ({result['change']}%)")
+        else:
+            print(f"[WARN] ⚠ {index_name}: {result.get('error', '获取失败')}")
+        
+        return result
+        
+    except ImportError as e:
+        print(f"[WARN] browser_fetch 模块未找到：{e}，使用占位符")
+        return {'point': PLACEHOLDER, 'change': PLACEHOLDER, 'error': 'browser_fetch 未导入'}
+    except Exception as e:
+        print(f"[ERROR] {index_name} 获取失败：{e}")
+        return {'point': PLACEHOLDER, 'change': PLACEHOLDER, 'error': str(e)}
 
 
 def fetch_sentiment_data(data_type: str, query: str) -> Dict[str, Any]:
-    """获取涨跌家数数据"""
-    url = build_iwencai_url(query)
-    print(f"[INFO] 获取 {data_type} 数据...")
+    """
+    获取涨跌家数数据（使用 web_fetch 工具）
     
-    # TODO: 实际调用 browser 工具
-    # snapshot = fetch_with_browser(url)
-    # result = parse_sentiment_snapshot(snapshot, data_type)
-    
-    # 临时返回占位符
-    return {'count': PLACEHOLDER, 'error': '待实现浏览器调用'}
+    注意：同花顺问财的涨跌家数数据是动态加载的，web_fetch 可能无法获取
+    如果失败，返回占位符
+    """
+    try:
+        from urllib.parse import quote
+        url = f"https://www.iwencai.com/unifiedwap/result?w={quote(query)}&querytype=zhishu"
+        
+        print(f"[INFO] 获取 {data_type} 数据...")
+        print(f"[DEBUG] URL: {url}")
+        
+        # 使用 web_fetch 工具
+        result = subprocess.run(
+            ['python3', '-c', f'''
+import subprocess
+result = subprocess.run(
+    ["openclaw", "web-fetch", "{url}", "--extract-mode", "text"],
+    capture_output=True, text=True, timeout=15
+)
+print(result.stdout)
+            '''],
+            capture_output=True,
+            text=True,
+            timeout=20
+        )
+        
+        output = result.stdout.strip()
+        
+        # 尝试从输出中提取数字
+        import re
+        # 模式：查找 "上涨家数为 XXXX 家" 或类似格式
+        match = re.search(r'(\d+)\s*家', output)
+        if match:
+            count = int(match.group(1))
+            print(f"[INFO] ✅ {data_type}: {count}家")
+            return {'count': count}
+        
+        print(f"[WARN] ⚠ {data_type}: 无法从 web_fetch 输出中提取数据")
+        return {'count': PLACEHOLDER, 'error': 'web_fetch 解析失败'}
+        
+    except subprocess.TimeoutExpired:
+        print(f"[ERROR] {data_type} 获取超时")
+        return {'count': PLACEHOLDER, 'error': '超时'}
+    except Exception as e:
+        print(f"[ERROR] {data_type} 获取失败：{e}")
+        return {'count': PLACEHOLDER, 'error': str(e)}
 
 
 def fetch_all_data(date: str, force_refresh: bool = False) -> Dict[str, Any]:
@@ -286,7 +294,7 @@ def fetch_all_data(date: str, force_refresh: bool = False) -> Dict[str, Any]:
     
     Args:
         date: 日期字符串 (YYYY-MM-DD)
-        force_refresh: 是否强制刷新（忽略缓存）
+        force_refresh: 是否强制刷新（已废弃，始终获取最新数据）
     
     Returns:
         完整数据字典
@@ -297,15 +305,8 @@ def fetch_all_data(date: str, force_refresh: bool = False) -> Dict[str, Any]:
         actual_date = get_previous_trading_day(date)
         print(f"[INFO] {date} 为非交易日，使用最近交易日：{actual_date}")
     
-    # 检查缓存
-    if not force_refresh:
-        cached = load_cache(actual_date)
-        if cached:
-            print(f"[INFO] 使用缓存数据：{actual_date}")
-            cached['_from_cache'] = True
-            return cached
-    
-    print(f"[INFO] 重新获取数据：{actual_date}")
+    # ⚠️ 已移除缓存逻辑，始终获取最新数据
+    print(f"[INFO] 🔄 获取最新数据：{actual_date}")
     
     # 获取指数数据
     indices = {}
@@ -359,8 +360,7 @@ def fetch_all_data(date: str, force_refresh: bool = False) -> Dict[str, Any]:
         ],
     }
     
-    # 保存缓存
-    save_cache(actual_date, data)
+    # ⚠️ 已移除缓存保存逻辑，不再保存缓存
     
     return data
 
@@ -369,10 +369,10 @@ def main():
     """命令行入口"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='获取 A 股市场数据')
+    parser = argparse.ArgumentParser(description='获取 A 股市场数据（无缓存）')
     parser.add_argument('date', nargs='?', default=None, help='日期 (YYYY-MM-DD)，默认今天')
-    parser.add_argument('--force', action='store_true', help='强制刷新，忽略缓存')
     parser.add_argument('--json', action='store_true', help='仅输出 JSON')
+    parser.add_argument('--force', action='store_true', help='强制刷新（已废弃，始终获取最新数据）')
     
     args = parser.parse_args()
     
@@ -382,8 +382,8 @@ def main():
     else:
         date = datetime.now().strftime('%Y-%m-%d')
     
-    # 获取数据
-    data = fetch_all_data(date, force_refresh=args.force)
+    # 获取数据（始终获取最新）
+    data = fetch_all_data(date, force_refresh=True)
     
     # 输出
     print(json.dumps(data, ensure_ascii=False, indent=2))
