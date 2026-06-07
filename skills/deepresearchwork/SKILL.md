@@ -38,15 +38,48 @@ The Deep Research skill provides a systematic approach to conducting thorough in
 ## Research Workflow
 
 ### Phase 1: Initial Investigation
+
+#### 0. Perspective Alignment (视角模式, optional)
+
+> ⚠️ This step only executes when a perspective/analytical framework is specified. Skip entirely when no perspective is given.
+
+When the user specifies a perspective (e.g., "用 Serenity 的框架", "chokepoint 视角", "用某投资人的视角"):
+
+1. **Load perspective framework**:
+   - If referencing an installed persona Skill (e.g., `serenity-reply`): read its SKILL.md, extract mental models and decision heuristics
+   - If referencing a built-in framework: use the pre-defined core questions
+   - If custom: distill 3-5 core questions from user description
+
+2. **Translate framework into research dimensions**: For each mental model, define:
+   - Core question it asks
+   - Specific search terms it suggests
+   - What findings it would prioritize
+
+3. **Perspective-driven search strategy**: Augment broad search with perspective-specific queries:
+   - Example (chokepoint perspective): add "monopoly chokepoint", "sole supplier", "irreplaceable", "barrier to entry"
+   - Example (NVIDIA signal perspective): add "NVIDIA investment", "NVIDIA roadmap", "NVIDIA supply chain"
+   - Example (info asymmetry perspective): add "institutional buying", "small cap undervalued", "overlooked"
+
+4. **Output**: Internal perspective config (not shown to user):
+   ```
+   Perspective: [name]
+   Core questions: [2-5 questions]
+   Search dimensions: [custom search terms per dimension]
+   Priority rules: [which findings rank higher]
+   Confidence labels: [4-tier system definitions]
+   ```
+
 1. **Topic Analysis**
    - Clarify research scope
    - Identify key concepts and terms
    - Define specific questions to answer
+   - **If perspective mode**: align questions with perspective's core questions
 
 2. **Broad Search**
    - Use `web_search` to identify major sources
    - Gather diverse perspectives
    - Map the landscape of available information
+   - **If perspective mode**: supplement broad search with perspective-specific search terms (see Step 0)
 
 3. **Source Prioritization**
    - Rank sources by authority and relevance
@@ -505,6 +538,22 @@ python scripts/md2images.py "<报告.md完整路径>" -o "<报告所在目录>" 
 
 ## Limitations
 [Identified limitations in research — humanized language]
+
+## Perspective Review (视角审查, perspective mode only)
+> ⚠️ This section only appears when a perspective/analytical framework was specified.
+
+### Framework-by-Framework Review
+[For each mental model in the perspective framework:]
+- What findings does this model explain?
+- What questions does this model raise that the report didn't cover?
+- What are the limitations of applying this model here?
+
+### Conclusion Confidence Table
+| Conclusion | Confidence Tier | Notes |
+|-----------|----------------|-------|
+| [conclusion] | Direct Evidence / Pattern Induction / Framework Extrapolation / Insufficient Evidence | [source/logic] |
+
+> ⚠️ Investment disclaimer: Framework perspective, not investment advice. DYOR.
 
 ## Further Research Needed
 [Questions requiring additional investigation]
