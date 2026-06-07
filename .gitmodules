@@ -1,0 +1,3 @@
+[submodule "skills/serenity-reply"]
+	path = skills/serenity-reply
+	url = https://github.com/shinelp100/serenity-reply.git
